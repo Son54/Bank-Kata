@@ -1,9 +1,9 @@
 package com.capfi.bank.service;
 
-import com.capfi.bank.OperationAmount;
-import com.capfi.bank.OperationLine;
+import com.capfi.bank.model.OperationAmount;
+import com.capfi.bank.model.OperationLine;
 import com.capfi.bank.data.BankRepository;
-import com.capfi.bank.data.OperationLineEntityList;
+import com.capfi.bank.data.OperationLineEntityListTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,15 +33,15 @@ public class BankServiceTest {
     @Test
     public void shouldReturnHistory() {
         //Given
-        Mockito.when(bankRepository.findAll()).thenReturn(OperationLineEntityList.ALL);
+        Mockito.when(bankRepository.findAll()).thenReturn(OperationLineEntityListTest.ALL);
 
         //When
         List<OperationLine> history = bankService.history();
 
         //Then
         Assertions.assertThat(history)
-                .extracting("balance")
-                .containsExactly(new BigDecimal(2000), new BigDecimal(2250), new BigDecimal(500));
+            .extracting("balance")
+            .containsExactly(new BigDecimal(2000), new BigDecimal(2250), new BigDecimal(500));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class BankServiceTest {
     @Test
     public void shouldFailWithdraw_NotEnoughBalanceException() {
         //Given
-        Mockito.when(bankRepository.findTopByOrderByIdDesc()).thenReturn(Optional.of(OperationLineEntityList.thirdOperation));
+        Mockito.when(bankRepository.findTopByOrderByIdDesc()).thenReturn(Optional.of(OperationLineEntityListTest.thirdOperation));
         OperationAmount operationAmount = new OperationAmount(new BigDecimal(5000));
 
         //When Then

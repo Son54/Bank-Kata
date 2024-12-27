@@ -1,12 +1,22 @@
 package com.capfi.bank.data;
 
-import com.capfi.bank.OperationType;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ *
+ */
 @Entity
+@Data
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor
+@AllArgsConstructor
 @Table(name = "bank_operations")
 public class OperationLineEntity {
 
@@ -15,74 +25,19 @@ public class OperationLineEntity {
     @Column(name = "id")
     private Long id;
 
+    //Date of operation
     @Column(name = "date", nullable = false)
-    private Date date;
+    private final Date date;
 
+    //operation type : DEPOSIT | WITHDRAW
     @Column(name = "operation_type", nullable = false)
-    private String operationType;
+    private final String operationType;
 
+    //operation amount, always positive, BigDecimal for maximal precision
     @Column(name = "operation_amount", scale = 2, nullable = false)
-    private BigDecimal operationAmount;
+    private final BigDecimal operationAmount;
 
+    //Total balance after operation, BigDecimal for maximal precision
     @Column(name = "balance", scale = 2, nullable = false)
-    private BigDecimal balance;
-
-    public OperationLineEntity() {
-
-    }
-
-    public OperationLineEntity(Long id, Date date, String operationType, BigDecimal operationAmount, BigDecimal balance) {
-        this.id = id;
-        this.date = date;
-        this.operationType = operationType;
-        this.operationAmount = operationAmount;
-        this.balance = balance;
-    }
-
-    public OperationLineEntity(Date date, String operationType, BigDecimal operationAmount, BigDecimal balance) {
-        this.date = date;
-        this.operationType = operationType;
-        this.operationAmount = operationAmount;
-        this.balance = balance;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public String getOperationType() {
-        return operationType;
-    }
-
-    public void setOperationType(String operationType) {
-        this.operationType = operationType;
-    }
-
-    public BigDecimal getOperationAmount() {
-        return operationAmount;
-    }
-
-    public void setOperationAmount(BigDecimal operationAmount) {
-        this.operationAmount = operationAmount;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
+    private final BigDecimal balance;
 }

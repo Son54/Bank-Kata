@@ -1,10 +1,9 @@
 package com.capfi.bank.service;
 
-import com.capfi.bank.OperationAmount;
-import com.capfi.bank.OperationLine;
-import com.capfi.bank.OperationType;
+import com.capfi.bank.model.OperationAmount;
+import com.capfi.bank.model.OperationLine;
+import com.capfi.bank.model.OperationType;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +35,7 @@ public class BankServiceIntegrationTest {
     }
 
     @Test
-    public void shouldWithdraw() {
+    public void shouldWithdraw() throws OperationException {
         //Given
         OperationAmount operationAmount = new OperationAmount(new BigDecimal(500));
 

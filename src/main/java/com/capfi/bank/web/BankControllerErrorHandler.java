@@ -1,6 +1,6 @@
 package com.capfi.bank.web;
 
-import com.capfi.bank.Error;
+import com.capfi.bank.model.Error;
 import com.capfi.bank.service.NoBalanceException;
 import com.capfi.bank.service.NotEnoughBalanceException;
 import org.springframework.http.HttpStatus;
@@ -40,4 +40,9 @@ public class BankControllerErrorHandler {
         return new Error(ex.getMessage());
     }
 
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Error handleException(Exception ex) {
+        return new Error("An internal error occurred :" + ex.getMessage());
+    }
 }

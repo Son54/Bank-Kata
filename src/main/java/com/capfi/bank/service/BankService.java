@@ -1,11 +1,11 @@
 package com.capfi.bank.service;
 
-import com.capfi.bank.OperationAmount;
-import com.capfi.bank.OperationLine;
-import com.capfi.bank.OperationType;
+import com.capfi.bank.model.OperationAmount;
+import com.capfi.bank.model.OperationLine;
+import com.capfi.bank.model.OperationType;
 import com.capfi.bank.data.BankRepository;
 import com.capfi.bank.data.OperationLineEntity;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,47 +16,51 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BankService {
 
-    @Autowired
-    BankRepository bankRepository;
+    private final BankRepository bankRepository;
 
-    public BankService(BankRepository bankRepository) {
-        this.bankRepository = bankRepository;
-    }
-
+    /**
+     * Retrieve the history of all operations
+     *
+     * @return the list of all operations
+     */
     public List<OperationLine> history() {
         return bankRepository.findAll().stream()
-                .map(operationLine -> new OperationLine(
-                        operationLine.getDate(),
-                        OperationType.valueOf(operationLine.getOperationType()),
-                        operationLine.getOperationAmount(),
-                        operationLine.getBalance()
-                        )
+            .map(operationLine -> new OperationLine(
+                    operationLine.getDate(),
+                    OperationType.valueOf(operationLine.getOperationType()),
+                    operationLine.getOperationAmount(),
+                    operationLine.getBalance()
                 )
-                .sorted(Comparator.comparing(OperationLine::date).reversed())
-                .collect(Collectors.toList());
+            )
+            .sorted(Comparator.comparing(OperationLine::date).reversed()) //sort the latest operations on first
+            .collect(Collectors.toList());
     }
 
-    public OperationLine deposit(OperationAmount creditAmount) {
+    /**
+     * Deposit money in the account
+     *
+     * @param depositAmount the amount to deposit
+     * @return the operation line added
+     */
+    public OperationLine deposit(OperationAmount depositAmount) {
         Optional<OperationLineEntity> lastOperation = bankRepository.findTopByOrderByIdDesc();
         BigDecimal oldBalance = new BigDecimal(0);
         if (lastOperation.isPresent()) {
             oldBalance = lastOperation.get().getBalance();
         }
-        OperationLineEntity operationLineToRegister = new OperationLineEntity(
-            new Date(),
-            OperationType.DEPOSIT.name(),
-            creditAmount.amount(),
-            oldBalance.add(creditAmount.amount())
-        );
-
-        OperationLineEntity registeredLine = bankRepository.save(operationLineToRegister);
-
-        return entityToObject(registeredLine);
+        return addNewOperationLine(oldBalance, depositAmount.amount(), OperationType.DEPOSIT);
     }
 
-    public OperationLine withdraw(OperationAmount withdrawAmount) {
+    /**
+     * Withdraw money from the account
+     *
+     * @param withdrawAmount the amount to withdraw
+     * @return the operation line added
+     */
+    public OperationLine withdraw(OperationAmount withdrawAmount) throws OperationException {
         Optional<OperationLineEntity> lastOperation = bankRepository.findTopByOrderByIdDesc();
         if (lastOperation.isEmpty()) {
             throw new NoBalanceException();
@@ -65,16 +69,18 @@ public class BankService {
         if (oldBalance.compareTo(withdrawAmount.amount()) < 0) {
             throw new NotEnoughBalanceException(oldBalance);
         }
+        return addNewOperationLine(oldBalance, withdrawAmount.amount(), OperationType.WITHDRAW);
+    }
 
-        OperationLineEntity operationLineToRegister = new OperationLineEntity(
-                new Date(),
-                OperationType.WITHDRAW.name(),
-                withdrawAmount.amount(),
-                oldBalance.subtract(withdrawAmount.amount())
-        );
-
+    public OperationLine addNewOperationLine(BigDecimal balance, BigDecimal amount, OperationType operationType) {
+        BigDecimal newBalance;
+        if (operationType.equals(OperationType.DEPOSIT)) {
+            newBalance = balance.add(amount);
+        } else {
+            newBalance = balance.subtract(amount);
+        }
+        OperationLineEntity operationLineToRegister = new OperationLineEntity(new Date(), operationType.name(), amount, newBalance);
         OperationLineEntity registeredLine = bankRepository.save(operationLineToRegister);
-
         return entityToObject(registeredLine);
     }
 
